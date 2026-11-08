@@ -40,7 +40,7 @@ PLATES = {
     "play": {"roi": (0.0, 0.70, 0.40, 1.0), "threshold": 0.92},
     "return_lobby": {"roi": (0.55, 0.30, 1.0, 0.52), "threshold": 0.80},
     "claim": {"roi": (0.503, 0.80, 1.0, 1.0), "threshold": 0.93},
-    "claim_single": {"roi": (0.503, 0.80, 1.0, 1.0), "threshold": 0.88},
+    "claim_single": {"roi": (0.503, 0.80, 1.0, 1.0), "threshold": 0.92},
     "pirate_token": {"roi": (0.34, 0.06, 0.66, 0.38), "threshold": 0.78},
     "hud": {"roi": (0.0, 0.85, 0.30, 1.0), "threshold": 0.90},
     "menu_btn": {"roi": (0.70, 0.0, 1.0, 0.18), "threshold": 0.85},

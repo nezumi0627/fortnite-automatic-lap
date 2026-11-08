@@ -13,6 +13,7 @@ REWARD_REFERENCE_SIZE = (1280, 720)
 REWARD_BANNER_FILES = ("reward_banner_left.png", "reward_banner_right.png")
 REWARD_CORNER_SEARCH = ((0.16, 0.18, 0.40, 0.52), (0.60, 0.18, 0.85, 0.52))
 REWARD_SCALE_VARIATIONS = (0.85, 0.925, 1.0, 1.075, 1.15)
+REWARD_SEARCH_SCALE = 0.35
 PIRATE_TOKEN_SCALES = tuple(round(0.35 + 0.05 * index, 2) for index in range(11))
 
 
@@ -89,7 +90,6 @@ def find_reward_banner(
     gray = _gray(frame)
     if gray.size == 0:
         return RewardBannerMatch(False)
-    edges = cv2.Canny(gray, 70, 150)
     ref_w, ref_h = REWARD_REFERENCE_SIZE
     x_scale, y_scale = width / ref_w, height / ref_h
     best = RewardBannerMatch(False)
@@ -105,19 +105,31 @@ def find_reward_banner(
                 int(bounds[0] * width), int(bounds[1] * height),
                 int(bounds[2] * width), int(bounds[3] * height),
             )
-            region = edges[y0:y1, x0:x1]
-            tw = max(8, round(source.shape[1] * x_scale * variation))
-            th = max(8, round(source.shape[0] * y_scale * variation))
-            if region.size == 0 or tw >= region.shape[1] or th >= region.shape[0]:
+            region_gray = gray[y0:y1, x0:x1]
+            if region_gray.size == 0:
                 locations.append(())
                 continue
-            scaled = cv2.Canny(
-                cv2.resize(source, (tw, th), interpolation=cv2.INTER_NEAREST), 70, 150
+            region_width = max(1, round(region_gray.shape[1] * REWARD_SEARCH_SCALE))
+            region_height = max(1, round(region_gray.shape[0] * REWARD_SEARCH_SCALE))
+            region = cv2.resize(
+                region_gray,
+                (region_width, region_height),
+                interpolation=cv2.INTER_AREA,
             )
+            tw = max(8, round(source.shape[1] * x_scale * variation * REWARD_SEARCH_SCALE))
+            th = max(8, round(source.shape[0] * y_scale * variation * REWARD_SEARCH_SCALE))
+            if tw >= region.shape[1] or th >= region.shape[0]:
+                locations.append(())
+                continue
+            scaled = cv2.resize(source, (tw, th), interpolation=cv2.INTER_AREA)
             scores = cv2.matchTemplate(region, scaled, cv2.TM_CCOEFF_NORMED)
             scores = np.nan_to_num(scores, nan=-1.0, posinf=-1.0, neginf=-1.0)
             locations.append(tuple(
-                (x0 + x + tw / 2, y0 + y + th / 2, score)
+                (
+                    x0 + (x + tw / 2) / REWARD_SEARCH_SCALE,
+                    y0 + (y + th / 2) / REWARD_SEARCH_SCALE,
+                    score,
+                )
                 for x, y, score in _top_locations(scores)
             ))
 
