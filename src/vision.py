@@ -32,6 +32,13 @@ def load_template_auto(path, plate=None):
         return np.ascontiguousarray(img[:, :, :3])
     if img.ndim == 2:
         return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    if plate is not None:
+        return Plate(
+            np.ascontiguousarray(img[:, :, :3]),
+            np.full(img.shape[:2], 255, dtype=np.uint8),
+            tuple(plate["roi"]),
+            plate["threshold"],
+        )
     return img
 
 def capture_screen(monitor_index=1, region=None):
