@@ -86,3 +86,9 @@ def test_claim_single_template_exists_for_every_language():
     for lang in config.LANGS:
         assert os.path.isfile(config.template_path("claim_single", lang)), lang
         assert os.path.isfile(config.template_path("claim", lang)), lang
+
+
+def test_pirate_token_asset_is_shared_across_languages():
+    for lang in config.LANGS:
+        assert config.template_filename("pirate_token", lang) == "pirate_token_btn.webp"
+        assert os.path.isfile(config.template_path("pirate_token", lang)), lang
