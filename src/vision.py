@@ -108,7 +108,10 @@ def find_plate(
         if full_mask:
             res = cv2.matchTemplate(img, t, cv2.TM_CCOEFF_NORMED)
         else:
-            res = cv2.matchTemplate(img, t, cv2.TM_CCOEFF_NORMED, mask=m)
+            # OpenCV's masked TM_CCOEFF_NORMED is substantially slower than its
+            # masked normalized-difference implementation. Convert its distance
+            # score back to a similarity score so Plate thresholds stay intuitive.
+            res = 1.0 - cv2.matchTemplate(img, t, cv2.TM_SQDIFF_NORMED, mask=m)
         res = np.nan_to_num(res, nan=-1.0, posinf=-1.0, neginf=-1.0)
         _, val, _, loc = cv2.minMaxLoc(res)
         return float(val), x0 + loc[0] + t.shape[1] // 2, y0 + loc[1] + t.shape[0] // 2
